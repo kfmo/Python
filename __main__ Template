@@ -1,0 +1,100 @@
+import time
+import os
+
+
+import globalDefs as gd
+import globalVars as gv
+
+
+import py1
+import py2
+import py3
+import py4
+import py5
+	
+
+gd.printf("Python Start")  # START SCRIPT
+
+
+if __name__ == '__main__':
+	start = ''
+	while start == '':
+		print('[1] Enter 1 if you would like to ...')
+		print('[2] Enter 2 if you would like to ...')
+		print('[3] Enter q to quit')
+		
+		start = input('\nWhat would you like to do?\n:')
+		if start == '1':
+			OF = 'Y'
+			while OF == 'Y' or OF == 'y':
+				# -------------------------------------------------
+				# GET INPUTS FROM USER
+				# -------------------------------------------------
+				gv.init()
+				py1.def1()
+				
+				
+				# -------------------------------------------------
+				# GET, UPDATE & RUN SQL QUERIES
+				# -------------------------------------------------
+				py2.def1()
+				
+				
+				# -------------------------------------------------
+				# JOIN TABLES TO ID DISTINCT ROWS
+				# -------------------------------------------------
+				py3.def1()
+				
+				
+				# -------------------------------------------------
+				# ASK USER TO LOOP
+				# -------------------------------------------------
+				OF = input("""Would you like to repeat for another deal?\n y/n? """)
+
+			start = ''
+			del gv.varList
+				
+				
+		elif start == '2':
+			NF = 'Y'
+			while NF == 'Y' or NF == 'y':
+				# -------------------------------------------------
+				# GET INPUTS FROM USER
+				# -------------------------------------------------
+				gv.init()
+				py4.def1()
+								
+				
+				# -------------------------------------------------
+				# GET, UPDATE & RUN SQL QUERIES
+				# -------------------------------------------------
+				py2.def1()
+				
+				
+				# -------------------------------------------------
+				# JOIN TABLES TO ID DISTINCT ROWS
+				# -------------------------------------------------
+				py5.def1()
+				
+				
+				# -------------------------------------------------
+				# ASK USER TO LOOP
+				# -------------------------------------------------
+				NF = input("""Would you like to repeat for another deal?\n y/n? """)
+			
+			start = ''
+			del gv.varList
+
+		
+		elif start == 'q' or start == 'Q':
+			gd.printf('Ending program per user input...\n---------------------------------------------------')
+			
+			
+		else:
+			start = ''
+			
+		
+	os.chdir(os.path.abspath(os.path.join(os.path.dirname( '__file__' ), [filepath])))	#Set CWD to save LOG
+	gd.logging('LOG.txt')
+
+	time.sleep(3)
