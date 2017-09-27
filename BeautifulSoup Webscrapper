@@ -54,8 +54,12 @@ def scrapWeb():
 	s = ws.cell(row = 2, column = 6).value
 	content = requests.get(xlUrl).content #pull data from xlUrl, or change as needed
 	cnt = pd.read_csv(io.StringIO(content.decode('utf-8')))
-	#c = cnt.iloc[:, [0,2]][cnt.iloc[:, 2] == int(re.search('(?<=\$)\d+', s).group(0))] --> narrowing the scope of data extraction
 	
+	#try:
+	#	c = cnt.iloc[:, [0,2]][cnt.iloc[:, 2] == int(re.search('(?<=\$)\d+', s).group(0))] --> narrowing the scope of data extraction
+	#except AttributeError:
+	#	c = cnt.iloc[:, [0,2]][cnt.iloc[:, 2] == int(dolVal)] --> where each row in col2 equals dolVal
+		
 	ws = wb['Sheet1']
 	#ext = c.iloc[:,0] --> narrowed to single column
 	#for r, code in enumerate(ext, start=2):
