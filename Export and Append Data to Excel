@@ -1,0 +1,78 @@
+from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl import load_workbook
+import pandas as pd
+import numpy as np
+import datetime
+import os
+import re
+
+
+import globalVars as gv
+import globalDefs as gd
+
+
+
+# -------------------------------------------------
+# IMPORT FUNCTIONS
+# -------------------------------------------------
+def appendRows():
+	# -------------------------------------------------
+	# DEFINE VARIABLES --> import from file or request from user
+	# -------------------------------------------------
+	filename = gv.varList[2]
+	wb = gv.varList[3]
+	df = gv.varList[4]
+	cursor = gv.varList[5]
+
+	# -------------------------------------------------
+	# JOIN TABLES TO ID DISTINCT ROWS
+	# -------------------------------------------------
+	gd.printf('Identifying distinct rows...')
+
+	xl1 = pd.read_excel(filename, sheetname = 'Sheet1')
+	
+	try:
+		df1 = pd.DataFrame(np.array(df), columns = [n.upper() for n in [h[0] for h in cursor.description]])
+
+		xl1[['[header1]', '[header2]']] = xl1[['[header1]', '[header2]']].astype(object)
+		xl1[['[header3]', '[header4]']] = xl1[['[header3]', '[header4]']].astype(float)
+		df1[['[header1]', '[header2]']] = df1[['[header1]', '[header2]']].astype(object)
+		df1[['[header3]', '[header4]']] = df1[['[header3]', '[header4]']].astype(float)
+			
+		xlMerge = pd.merge(xl1, df1, how='inner', on=['[header1]', '[header2]', '[header3]', '[header4]'])
+		
+		xlMerge = xlMerge[['[header1]', '[header2]', '[header3]', '[header4]', '[header5]', '[header6]', '[header7]', '[header8]']]
+
+		if xlMerge.empty == False:
+			ws = wb['Sheet1']
+			ws.cell(row = ws.max_row + 2, column = 1).value = datetime.datetime.now().strftime('Added %b %d, %Y') #date stamp appended rows
+			
+			ROW_COUNT = 0
+			for r1_idx, r1 in enumerate(dataframe_to_rows(xlMerge, index=False, header=False), start=1):
+				xl = pd.read_excel(filename, sheetname = 'Sheet1')
+				xl[['[header1]', '[header2]']] = xl[['[header1]', '[header2]']].astype(object)
+				xl[['[header3]', '[header4]']] = xl[['[header3]', '[header4]']].astype(float)
+				for r2_idx, r2 in enumerate(dataframe_to_rows(xl, index=False, header=False), start=1):
+					if xlMerge.iloc[r1_idx-1, 0] != xl.iloc[r2_idx-1, 0] and xlMerge.iloc[r1_idx-1, 1] != xl.iloc[r2_idx-1, 1] and /
+            xlMerge.iloc[r1_idx-1, 2] != xl.iloc[r2_idx-1, 2] and xlMerge.iloc[r1_idx-1, 4] != xl.iloc[r2_idx-1, 4]: #change conditions as needed
+						if r2_idx == len(xl.index):
+							ws.append(r1)
+							wb.save(filename)
+							ROW_COUNT += 1
+					else:
+						continue
+			
+			print ('Processed %d Records.\nI think we are done checking!\nThe workbook should have opened for you to verify the results.\n\n' % (ROW_COUNT))
+			os.startfile(filename)
+		elif xlMerge.empty == True:
+			print("""\nSomething may have gone wrong...\nCheck the file and data source!\n\n""")
+	
+	except ValueError:
+		print("""\nSomething may have gone wrong...\nCheck the file and data source!\n\n""")
+		
+	wb.close()
+		
+		
+		
+if __name__ == '__main__':
+	appendRows()
