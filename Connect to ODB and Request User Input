@@ -34,6 +34,15 @@ def ObtainStr(x):  # GET STRING FROM USER
             return str(userIn)
         except ValueError:
             print(" *** Input Error: <<<!!! Invalid Format !!!>>>\n *** Please input a string")
+	    
+	   
+def findBetween(s, first, last):
+    try:
+        start = s.index(first) + len(first)
+        end = s.index(last, start)
+        return s[start:end]
+    except ValueError:
+        print(" *** Input Error: <<<!!! Invalid Format !!!>>>\n *** Please input a string")
 			
 			
 def connect(x):  # CONNECT TO ODB
@@ -72,7 +81,7 @@ def getInput():
 	
 	connect([ODB Name])  # CONNECT TO ODB
 	df = cursor.execute(query).fetchall()
-	info = df[row][col]
+	info = findBetween(df[row][col], '[infoHead] ', ' [infoTail]')
 	
 	
 	filename = 'Example for ' + str(stg) + ' ' + str(num) + '_' + datetime.datetime.now().strftime('%b%d%Y') + '_' + str(info) + '.xlsm'
