@@ -1,0 +1,153 @@
+from openpyxl import load_workbook
+import pyodbc as pc
+import os
+import re
+import time
+
+
+import globalVars as gv
+import globalDefs as gd
+
+
+
+# -------------------------------------------------
+# IMPORT FUNCTIONS
+# -------------------------------------------------
+def disconnect(x):  # DISCONNECT FROM ODB
+    dw_cnxn.close()
+    gd.printf(str(x) + " ODBC Connection CLOSED")
+    return
+	
+	
+def delComments(q):
+	q = re.sub(re.compile('--.*?\n', re.DOTALL), '', q)
+	return q
+
+
+def delNewLines(q):
+	q = re.sub(re.compile('\n+', re.MULTILINE), ' ', q)
+	return q
+	
+	
+def delExSpaces(q):
+	q = re.sub(re.compile(' +', re.MULTILINE), ' ', q)
+	return q
+
+	
+def runQueries():
+	# -------------------------------------------------
+	# DEFINE VARIABLES --> import from file or request from user
+	# -------------------------------------------------
+	owd = gv.varList[0]
+	num = gv.varList[1]
+	info = gv.varList[2]
+	filename = gv.varList[4]
+	dw_cnxn = gv.varList[5]
+	cursor = gv.varList[6]
+
+	# -------------------------------------------------
+	# GET, UPDATE & RUN MOZART QUERIES
+	# -------------------------------------------------
+	gd.printf("Running the SQL to build data")
+
+	#Get & update queries	
+	rel_path = "[sqlQuery]" #change accordingly
+	abs_file_path = os.path.join(owd, rel_path)
+	x = open(abs_file_path).read()
+	z = re.split(r';', x)[:-1]
+
+	queries = ''
+	for s in z:
+		s = s.replace("$num", str(num))
+		s = s.replace("$info", str(info))
+		queries += s + ';'
+
+	#Run queries
+	dw_cnxn.commit()
+
+	queries = delComments(queries)
+	queries = delNewLines(queries)
+	queries = delExSpaces(queries)
+	queries = re.split(r';', queries)[:-1]
+
+	gd.printf('Populating workbook...')
+
+	wb = load_workbook(filename = [filename], read_only=False, keep_vba=True) #keep_vba=true if file needs macro
+
+	n = 0
+	for query in queries:
+		if n == 0:
+			query = query + ';'
+			cursor.execute(query)
+			n += 1
+		elif n > 0 and n < 3:
+			query = query[1:] + ';'
+			dw_cnxn.commit()
+			cursor.execute(query)
+			n += 1
+		elif n == 4: 
+			ws = wb['All Trans Details']
+			query = query[1:] + ';'
+			dw_cnxn.commit()
+			df = cursor.execute(query).fetchall()
+			
+			header1 = [h[0] for h in cursor.description]
+			h = 0
+			while h < len(header1):
+				ws.cell(column = h+1, row = 1, value = header1[h])
+				h += 1
+			
+			for ls in df:
+				for l in ls:
+					loc = list(ls).index(l)
+					ls[loc] = re.sub('[^ -~].*\w*', '?', delExSpaces(str(l))) #replace unusual characters (i.e., character encoding) with "?"
+						
+			for r, row_entries in enumerate(df, start=2):
+				for c, val in enumerate(row_entries, start=1):
+					ws.cell(column = c, row = r, value = val)
+			n += 1
+		else:
+			ws = wb['Sheet1']
+			query = query[1:] + ';'
+			dw_cnxn.commit()
+			df = cursor.execute(query).fetchall()
+			
+			header2 = [h[0] for h in cursor.description]
+			h = 0
+			while h < len(header2):
+				ws.cell(column = h+1, row = 1, value = header2[h])
+				h += 1
+				
+			for ls in df:
+				for l in ls:
+					loc = list(ls).index(l)
+					ls[loc] = re.sub('[^ -~].*\w*', '?', delExSpaces(str(l)))
+					if ls[2] == '?':
+						m = re.search('\w+(?=@)', ls[1]) #replace "?" with string before "@"
+						ls[2] = m.group(0)
+			
+			for r, row_entries in enumerate(df, start=2):
+				for c, val in enumerate(row_entries, start=1):
+					ws.cell(column = c, row = r, value = val)
+
+	gv.varList.append(wb)
+
+	os.chdir(os.path.abspath(os.path.join(os.path.dirname( '__file__' ), [filepath])))	#Set CWD to save wb
+	
+	wb.save(filename)
+	wb.close()
+	
+	gd.printf('The Excel file should have opened for you to review.  Please make sure the data is correct\n---------------------------------------------------')
+	
+	os.startfile(filename)
+
+
+
+# -------------------------------------------------
+# ONLY RUN IF 'MAIN'
+# -------------------------------------------------
+if __name__ == '__main__':
+	runQueries()
+	cursor.close()
+	del cursor
+	disconnect("Mozart")  # DISCONNECT MOZART
