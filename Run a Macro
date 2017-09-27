@@ -1,0 +1,17 @@
+from win32com.client import Dispatch
+
+#Define var
+xlsmFile = "'{}'".format(filename)
+  
+def runMacro():
+  #Run macro to assign codes
+	xl = Dispatch('Excel.Application')
+	wbDispatch = xl.Workbooks.Open(os.path.join(os.getcwd(), [filename]))
+	xl.Run(xlsmFile + [macroName])
+	wbDispatch.Close(True)	#Save before close
+  
+if __name__ == '__main__':
+  runMacro()
+  #reset xl environment
+  xl.Quit()
+  del xl
