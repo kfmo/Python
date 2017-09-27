@@ -1,0 +1,89 @@
+import datetime
+import pyodbc as pc
+import time
+import re
+import os
+
+
+import globalVars as gv 
+import globalDefs as gd
+
+
+
+# -------------------------------------------------
+# DEFINE FUNCTIONS & SET OWD
+# -------------------------------------------------
+owd = os.getcwd()
+
+
+def ObtainInt(x):  # GET NUMBER FROM USER
+    while True:
+        s = input("Enter " + str(x) + " (number): ")
+        userIn = re.sub('[\s+]', '', str(s))
+        try:
+            return int(userIn)
+        except ValueError:
+            print(" *** Input Error: <<<!!! Invalid Format !!!>>>\n *** Please input a number")
+			
+			
+def ObtainStr(x):  # GET STRING FROM USER
+    while True:
+        s = input("Enter " + str(x) + ": ")
+        userIn = re.sub('[\s+]', ' ', str(s))
+        try:
+            return str(userIn)
+        except ValueError:
+            print(" *** Input Error: <<<!!! Invalid Format !!!>>>\n *** Please input a string")
+			
+			
+def connect(x):  # CONNECT TO ODB
+    time.sleep(5)
+    global dw_cnxn
+    global cursor
+    dw_cnxn = pc.connect("DSN=" + str(x))
+    cursor = dw_cnxn.cursor()
+    gd.printf(str(x) + " ODBC Connection OPENED")
+    return
+
+	
+def getInput():
+	# -------------------------------------------------
+	# GET INPUTS FROM USER
+	# -------------------------------------------------
+	os.chdir(owd)
+	
+	test = ''
+	while test != 'Y' and test != 'y':
+		print("---------------------------------------------------")
+		num = ObtainInt("a number")
+		stg = ObtainStr("a string")
+		print("---------------------------------------------------\n-- All inputs are valid --\n---------------------------------------------------\nPlease Check and Confirm the below inputs:")
+		print("  NUM = " + str(num))
+		print("  STG = " + str(stg) + "\n---------------------------------------------------")
+		test = input("""Enter 'Y' or 'y' to confirm and pull data\n Or\nEnter any other key to re-enter values\n:""")
+		
+
+	gd.printf('Acquiring additional info...')
+	
+	rel_path = [sqlScript] #Or the name of a file containing the data
+	abs_file_path = os.path.join(owd, rel_path)
+	query = open(abs_file_path).read()
+	query = query.replace("$[var]", str([var])) #if need to replace placeholder in SQL script
+	
+	connect([ODB Name])  # CONNECT TO ODB
+	df = cursor.execute(query).fetchall()
+	info = df[row][col]
+	
+	
+	filename = 'Example for ' + str(stg) + ' ' + str(num) + '_' + datetime.datetime.now().strftime('%b%d%Y') + '_' + str(info) + '.xlsm'
+	
+	
+	gv.varList.extend([owd, num, info, stg, filename, dw_cnxn, cursor])
+	
+	
+	
+# -------------------------------------------------
+# ONLY RUN IF 'MAIN'
+# -------------------------------------------------
+if __name__ == '__main__':
+	getInput()
