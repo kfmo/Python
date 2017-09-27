@@ -1,0 +1,78 @@
+from bs4 import BeautifulSoup
+import pandas as pd
+import requests
+import os
+import re
+import io
+
+#import globalDefs as gd --> may import defs from separate file
+#import globalVars as gv --> may import vars from separate file
+
+
+# -------------------------------------------------
+# IMPORT FUNCTIONS
+# -------------------------------------------------
+def ObtainUrl(x):  # GET URL FROM USER
+    while True:
+        s = input("Enter " + str(x) + ": ")
+        userIn = re.sub('[\s+]', '', str(s))
+        try:
+            return str(userIn)
+        except ValueError:
+            print(" *** Input Error: <<<!!! Invalid Format !!!>>>\n *** Please input a string")
+            
+            
+def scrapWeb():
+	# -------------------------------------------------
+	# DEFINE VARIABLES --> adjust whether importing from file or requesting user input
+	# -------------------------------------------------
+	#owd = gv.varList[0]
+	#filename = gv.varList[1]
+	#xlsmFile = "'{}'".format(filename)	#For xl.Run('macro')
+	#wb = gv.varList[3]
+
+	# -------------------------------------------------
+	# GET FROM WEB
+	# -------------------------------------------------
+	#gd.printf('Import data\n---------------------------------------------------')
+
+	#Scrape web
+	webUrl = ObtainUrl("a valid URL")
+
+	headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:54.0) Gecko/20100101 Firefox/54.0'} #update per system OS and browswer
+	html = requests.get(webUrl, headers = headers, verify = True).content
+
+	soup = BeautifulSoup(html)
+	print("---------------------------------------------------\n-- Find the URL... --\n---------------------------------------------------")
+	print(soup.find_all('div')) #In this case, it needs to search for another URL in html containing a CSV file.  Adjust according to needs.
+	print("---------------------------------------------------")
+
+	#Download/export to excel file
+	#xlUrl = ObtainUrl("a valid URL") --> if searching for another URL containing a CSV file
+	
+	ws = wb['All Trans Details']
+	s = ws.cell(row = 2, column = 6).value
+	content = requests.get(xlUrl).content #pull data from xlUrl, or change as needed
+	cnt = pd.read_csv(io.StringIO(content.decode('utf-8')))
+	#c = cnt.iloc[:, [0,2]][cnt.iloc[:, 2] == int(re.search('(?<=\$)\d+', s).group(0))] --> narrowing the scope of data extraction
+	
+	ws = wb['Sheet1']
+	#ext = c.iloc[:,0] --> narrowed to single column
+	#for r, code in enumerate(ext, start=2):
+	#	ws.cell(column = 1, row = r, value = code[2:-1])
+
+  for r_idx, r in enumerate(cnt, start=2):
+    for c_idx, val in enumerate(r, start=2):
+		  ws.cell(column = c_idx, row = r_idx, value = val)
+		
+	os.chdir(os.path.abspath(os.path.join(owd, 'filepath')))	#Define CWD to save wb
+	
+	wb.save(filename)
+	wb.close()
+
+
+# -------------------------------------------------
+# ONLY RUN IF 'MAIN'
+# -------------------------------------------------
+if __name__ == '__main__':
+	scrapWeb()
