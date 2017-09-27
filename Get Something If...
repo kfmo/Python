@@ -1,0 +1,74 @@
+import datetime
+
+
+import globalVars as gv
+import globalDefs as gd
+
+
+
+# -------------------------------------------------
+# DEFINE FUNCTIONS & VARIABLES --> import from file or request from user
+# -------------------------------------------------
+ls_start = []
+	
+
+def getStartTime(x):	# GET SOMETHING - in this case, start time of something
+	global ls_start
+	start_time = gv.varList[2]
+	if start_time - datetime.timedelta(days = 1) <= x <= start_time + datetime.timedelta(days = 1):
+		ls_start += [x]
+	else:
+		ls_start += [start_time]
+		return
+		
+
+def ObtainDateTime(x):  # GET DATETIME FROM USER
+    while True:
+        s = input("Enter " + str(x) + " (MM/DD/YY HH:MM or MM/DD/YYYY HH:MM or YYYY/MM/DD HH:MM [add AM/PM if using 12-hr format]): ")
+        for fmt in ('%Y-%m-%d %H:%M', '%Y.%m.%d %H:%M' , '%Y/%m/%d %H:%M', '%m.%d.%y %H:%M', '%m/%d/%y %H:%M', '%m-%d-%y %H:%M', '%m.%d.%Y %H:%M', /
+          '%m/%d/%Y %H:%M', '%m-%d-%Y %H:%M', '%Y-%m-%d %I:%M%p', '%Y.%m.%d %I:%M%p' , '%Y/%m/%d %I:%M%p', '%m.%d.%y %I:%M%p', '%m/%d/%y %I:%M%p', /
+          '%m-%d-%y %I:%M%p', '%m.%d.%Y %I:%M%p', '%m/%d/%Y %I:%M%p', '%m-%d-%Y %I:%M%p'):
+            try:
+                return datetime.datetime.strptime(s, fmt)
+                break
+            except:
+                pass
+        print(" *** Input Error: <<<!!! Invalid Format for Date/Time !!!>>>\n *** Please input datetime as MM/DD/YY HH:MM or MM/DD/YYYY HH:MM or YYYY/MM/DD HH:MM")
+
+
+def getStart():
+	# -------------------------------------------------	
+	#DEFINE VARIABLE	
+	# -------------------------------------------------
+	df1 = gv.varList[4]
+	global starttime
+		
+	# -------------------------------------------------
+	# GET START DATETIME
+	# -------------------------------------------------
+	for retry in range(3):
+		for d in df1[0]:
+			if 24 in d: #change condition as needed
+				getStartTime(d[1])
+		try:
+			starttime = min(ls_start)
+			return starttime
+		except:
+			starttime = ls_start
+			return starttime
+	else:
+		queue = ''
+		while queue != 'Y' and queue != 'y':
+			gd.printf('Could not find "something".  Please check the data and re-enter the info.')
+			print("---------------------------------------------------")
+			start_time = ObtainDateTime("the scheduled start date and time")
+			print("---------------------------------------------------\n-- All inputs are valid --\n---------------------------------------------------\nPlease Check and Confirm the below inputs:")
+			print("  START_TIME = " + str(start_time) + "\n---------------------------------------------------")
+			queue = input("""Enter 'Y' or 'y' to confirm and pull data\n Or\nEnter any other key to re-enter values\n:""")
+			
+	
+# -------------------------------------------------
+# ONLY RUN IF 'MAIN'
+# -------------------------------------------------
+if __name__ == '__main__':
+	getStart()
