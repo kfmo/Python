@@ -1,0 +1,21 @@
+import datetime
+import time
+import os
+
+
+log = ''
+def logging(txt_file):  # DEFINE LOGGING
+    script_dir = os.path.dirname(os.path.realpath('__file__'))
+    rel_path = txt_file
+    abs_file_path = os.path.join(script_dir, rel_path)
+    txt = open(abs_file_path, 'a')
+    txt.write(str(log))
+    txt.close()
+    return
+
+	
+def printf(line):  # DEFINE PRINT
+    global log
+    log = str(log) + "\n" + '------------------------------' + "\n" + str(datetime.datetime.today().ctime())[4:16] + ' ----->> ' + str(line)
+    print ('------------------------------' + "\n" + str(datetime.datetime.today().ctime())[4:16] + ' ----->> ' + str(line))
+    return	
