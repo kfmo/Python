@@ -1,0 +1,29 @@
+import matplotlib
+import matplotlib.pyplot as plt
+import seaborn as sns
+from openpyxl import Workbook 
+from openpyxl.drawing.image import Image
+
+matplotlib.style.use('ggplot')
+
+
+
+wb = Workbook()
+ws = wb['Sheet']
+
+x = df.columns
+y = df.iloc[-1, :]
+plt.figure(figsize=(20,10))
+plt.plot(x, y)
+plt.title('...')
+plt.ylabel('...')
+plt.xticks(fontsize=12, rotation=90)
+plt.yticks(fontsize=12)
+plt.savefig('...png', dpi = 150)
+
+ws = wb['Sheet']
+img = Image('...png')
+ws.add_image(img, 'A1')
+
+wb.save('filename')
+wb.close
